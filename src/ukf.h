@@ -32,6 +32,9 @@ public:
   ///* predicted sigma points matrix
   MatrixXd Xsig_pred_;
 
+  ///* number of sigma points
+  int n_sig_;
+
   ///* time when the state is true, in us
   long long time_us_;
 
@@ -74,6 +77,9 @@ public:
   ///* the current NIS for laser
   double NIS_laser_;
 
+  ///* Greater Than Zero: reference for small number
+  constexpr static double GT_ZERO = 1e-5; 
+
   /**
    * Constructor
    */
@@ -108,6 +114,14 @@ public:
    * @param meas_package The measurement at k+1
    */
   void UpdateRadar(MeasurementPackage meas_package);
+
+private:
+  /**
+  * Helper function for commons update steps for both LASER and RADAR 
+  */
+  void Update_common_steps(const MatrixXd & Zsig,
+                           const MatrixXd & R,
+                           const MeasurementPackage & meas_package);
 };
 
 #endif /* UKF_H */
