@@ -24,11 +24,21 @@ UKF::UKF() {
   // initial covariance matrix
   P_ = MatrixXd(5, 5);
 
+
+  /**
+    For the setting of `std_a_` and `std_yawdd_` parameters, ideally it should be 
+    estimated based on different dataset. E.g., I found the optimal estimates of std_a_ for
+    the two test sets are very different (0.15 vs 10). 
+    Here I am using a trial-and-error by comparing it with the ground truth, and find
+    larger std_a_ tends to give better performance on test 1 whereas slightly worse on test2.
+    So in practice I would expect to use different process model parameters for different
+    types of motion tracking. 
+  **/
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 0.8;
+  std_a_ = 0.9; /*m in s^2*/
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 0.6;
+  std_yawdd_ = 0.55; /*~30 degree*/
 
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
@@ -95,6 +105,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     }
     
     x_ << px, py, /*v=*/0, /*yaw=*/0, /*yawd*/0;
+    // P value copied over from lesson 14
     P_ <<  0.0043,   -0.0013,    0.0030,   -0.0022,   -0.0020,
           -0.0013,    0.0077,    0.0011,    0.0071,    0.0060,
            0.0030,    0.0011,    0.0054,    0.0007,    0.0008,
@@ -320,8 +331,8 @@ void UKF::Update_common_steps(const MatrixXd & Zsig,
   VectorXd residual = z - z_pred;
   // angle normalization - introduced in the class, not I found it unnecessary
   // for the given test data.
-  // while (residual(1)> M_PI) residual(1) -= 2*M_PI;
-  // while (residual(1)<-M_PI) residual(1) += 2*M_PI;
+  while (residual(1)> M_PI) residual(1) -= 2*M_PI;
+  while (residual(1)<-M_PI) residual(1) += 2*M_PI;
 
   x_ = x_ + (K * residual);
 
